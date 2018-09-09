@@ -17,12 +17,29 @@ function logError(type,action,text){
 ==ACTION: ${action}==
 !!${text}!!
 ---------------------------`);
+fs.appendFile("log.txt", `
+-----------ERROR-----------
+==ACTION: ${action}==
+!!${text}!!
+---------------------------`, function(err) {
+                    if (err) {
+                    console.log(err);
+                    }
+                });
         break;
         case "log":
             console.log(`
 ++++++++++SUCCUSS++++++++++
 ==ACTION: ${action}==
 +++++++++++++++++++++++++++`);
+fs.appendFile("log.txt", `
+++++++++++SUCCUSS++++++++++
+==ACTION: ${action}==
++++++++++++++++++++++++++++`, function(err) {
+                if (err) {
+                console.log(err);
+                }
+            });
         break;
     }
 }
@@ -150,5 +167,4 @@ It's on Netflix!`);
     logError("error","Initial read",error)       ;
 }
 }
-
 doWork();
