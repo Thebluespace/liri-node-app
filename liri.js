@@ -1,6 +1,7 @@
 require("dotenv").config();
 var request = require("request");
-var omdb = require("omdb");
+//var omdb = require("omdb");
+var fs = require("fs");
 var bands = require("bandsintown")("codingbootcamp");
 var Spotify = require("node-spotify-api");
 var keys = require("./keys.js")
@@ -56,10 +57,10 @@ ACTORS: ${data.Actors}`);
         //console.log(data);
 }
 function bandCallback(data){
-    ///console.log(data);
+    //console.log(data);
     
     for(i=0;i < data.length; i++){
-        console.log(`WHERE: ${data[i].venue[1]}
+        console.log(`WHERE: ${data[i].venue.place}
 ${data[i].formatted_location}
 WHEN: ${data[i].formatted_datetime}`);
 if(i + 1 != data.length){
@@ -82,7 +83,7 @@ try {
     } else if (arg.length === 2){
         str = arg[1];
     }
-    console.log(str);
+    //console.log(str);
     switch(arg[0]){
         case "spotify-this":
             spotify.search({type: "track", query: str, limit: 1}).then(spotifyCallback);
@@ -93,7 +94,11 @@ try {
                 console.log("==========" + str + "==========")
                 console.log("EVENT LISTINGS")
                 console.log("==================================")
-                bandCallback(events);
+                if (events.length < 1){
+                    console.log("No events found!");
+                }else {
+                    bandCallback(events);
+                }
                 console.log("==================================")
             });
         break;
@@ -124,6 +129,13 @@ It's on Netflix!`);
         break;
 
         case "do-what-it-says":
+              var str = fs.readFile("./random.txt",function(err, text){
+                  if (err){
+                      logError("error","READ FILE",err.message);
+                      return;
+                  }
+                  spotify.search({type: "track", query: text, limit: 1}).then(spotifyCallback);
+              })
         break;
         default:
             logError("error","user input","invalid user input");
