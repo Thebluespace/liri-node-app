@@ -1,4 +1,7 @@
 require("dotenv").config();
+var request = require("request");
+var omdb = require("omdb");
+var bands = require("bandsintown")("codingbootcamp");
 var Spotify = require("node-spotify-api");
 var keys = require("./keys.js")
 //console.log(keys.spotify);
@@ -11,7 +14,7 @@ function logError(type,action,text){
             console.log(`
 -----------ERROR-----------
 ==ACTION: ${action}==
-!!${error}!!
+!!${text}!!
 ---------------------------`);
         break;
         case "log":
@@ -38,12 +41,27 @@ LINK: ${data.tracks.items[0].external_urls.spotify}`);
         logError("error","Spotify Search",error)
     }
 }
-function omdbCallback(error, response, body){;
-    if (!error && response.statusCode === 200) {
-    }
+function omdbCallback(data){
+//         console.log(`MOVE TITLE: ${data.title}
+// RELEASE: ${data.year}
+// RATING: ${data.imdbrating}
+// PRODUCED IN: ${data.country}
+// LANGUAGE: ${data.language}
+// PLOT: ${data.plot}
+// ACTORS: ${data.actors}`);
+        console.log(data);
 }
 function bandCallback(data){
-
+    ///console.log(data);
+    
+    for(i=0;i < data.length; i++){
+        console.log(`WHERE: ${data[i].venue[1]}
+${data[i].formatted_location}
+WHEN: ${data[i].formatted_datetime}`);
+if(i + 1 != data.length){
+    console.log("========")
+}
+    }
 }
 function shortenArg(){
     var str = "";
@@ -53,23 +71,44 @@ function shortenArg(){
     return str;
 }
 function doWork(){
+try {
     if(arg.length > 2){
         var str = shortenArg();
     } else {
         var str = arg[1];
     }
+    console.log(str);
     switch(arg[0]){
         case "spotify-this":
             spotify.search({type: "track", query: str, limit: 1}).then(spotifyCallback);
         break;
 
         case "concert-this":
-            var bands = require("https://rest.bandsintown.com/artists/" + str + "/events?app_id=codingbootcamp")
-            bandCallback(data);
+            bands.getArtistEventList(str).then(function(events){
+                console.log("==========" + str + "==========")
+                console.log("EVENT LISTINGS")
+                console.log("==================================")
+                bandCallback(events);
+                console.log("==================================")
+            });
         break;
 
         case "movie-this":
-            require("http://www.omdbapi.com/?t="+ str +"&y=&plot=short&apikey=trilogy",omdbCallback);
+        if (str = ""){
+            console.log(`If you haven't watched "Mr. Nobody", then you should: http://www.imdb.com/title/tt0485947/
+It's on Netflix!`);
+            return;
+        }
+            //var queryURL = "https://www.omdbapi.com/?t="+ str +"&plot=short&apikey=trilogy"
+            omdb.get({title: "Saw"},function(err, events){
+                if (!err){
+                    console.error(err)
+                    logError("error","OMDB SEARCH",err.message);
+                } else {
+                    omdbCallback(events);
+                }
+
+            });
         break;
 
         case "do-what-it-says":
@@ -83,6 +122,9 @@ function doWork(){
 'do-what-it-says'`)
         break;
     }
+} catch (error) {
+    logError("error","Initial read",error)       ;
+}
 }
 
 doWork();
