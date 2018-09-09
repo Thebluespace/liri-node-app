@@ -42,14 +42,18 @@ LINK: ${data.tracks.items[0].external_urls.spotify}`);
     }
 }
 function omdbCallback(data){
-//         console.log(`MOVE TITLE: ${data.title}
-// RELEASE: ${data.year}
-// RATING: ${data.imdbrating}
-// PRODUCED IN: ${data.country}
-// LANGUAGE: ${data.language}
-// PLOT: ${data.plot}
-// ACTORS: ${data.actors}`);
-        console.log(data);
+    if (data.Response == "False"){
+        return console.log("Movie not found!");
+    }
+        console.log(`MOVE TITLE: ${data.Title}
+RELEASE: ${data.Year}
+IMDB RATING: ${data.imdbRating}
+ROTTEN TOMATOES: ${data.Ratings[1].Value}
+PRODUCED IN: ${data.Country}
+LANGUAGE: ${data.Language}
+PLOT: ${data.Plot}
+ACTORS: ${data.Actors}`);
+        //console.log(data);
 }
 function bandCallback(data){
     ///console.log(data);
@@ -72,10 +76,11 @@ function shortenArg(){
 }
 function doWork(){
 try {
+    var str = "";
     if(arg.length > 2){
-        var str = shortenArg();
-    } else {
-        var str = arg[1];
+        str = shortenArg();
+    } else if (arg.length === 2){
+        str = arg[1];
     }
     console.log(str);
     switch(arg[0]){
@@ -94,21 +99,28 @@ try {
         break;
 
         case "movie-this":
-        if (str = ""){
+        if (str === ""){
             console.log(`If you haven't watched "Mr. Nobody", then you should: http://www.imdb.com/title/tt0485947/
 It's on Netflix!`);
             return;
         }
-            //var queryURL = "https://www.omdbapi.com/?t="+ str +"&plot=short&apikey=trilogy"
-            omdb.get({title: "Saw"},function(err, events){
-                if (!err){
-                    console.error(err)
-                    logError("error","OMDB SEARCH",err.message);
-                } else {
-                    omdbCallback(events);
+            var queryURL = "https://www.omdbapi.com/?t=" + str + "&plot=short&apikey=trilogy";
+            request(queryURL, function(error, response, body) {
+                if (!error && response.statusCode === 200) {
+                  omdbCallback(JSON.parse(body));
                 }
+              });
+            
+            // omdb.search("saw",function(err, events){ //node package version
+            //     if (!err){
+            //         console.error(err)
+            //         logError("error","OMDB SEARCH",err.message);
+            //     } else {
+            //         console.log(events);
+            //         omdbCallback(events);
+            //     }
 
-            });
+            // });
         break;
 
         case "do-what-it-says":
